@@ -39,7 +39,6 @@ Then,
 - Checkout this repository
 - Execute `./prepareSysroot.sh <RPI username> <RPI IP address>`
   This copies the Raspberry Pi's sysroot to your computer. Depending on your configuration, you may enter your RPi user's password three times.
-- Carefully look at the Dockerfile's "*PLEASE CUSTOMIZE THIS SECTION*" and edit it if necessary.
 - Execute `docker build --tag qtpi/qtpi:1.0 .`
   This will generate a Docker image while compiling and cross-compiling Qt. Since most of the process is done here, it will take some time.
 - When the last step succeeded, you now have the complete environment ready for compiling Qt applications for your host / your computer as well as your Raspberry Pi.

@@ -13,14 +13,14 @@ FROM ubuntu:focal
 #                 PLEASE CUSTOMIZE THIS SECTION
 #######################################################################
 # The Qt version to build
-ARG QT_VERSION=6.3.1
+ARG QT_VERSION=6.2.4
 # The Qt modules to build
 # I use QtQuick with QML, so the following three modules need to be built
 ARG QT_MODULES=qtbase,qtshadertools,qtdeclarative
 # How many cores to use for parallel builds
 ARG PARALLELIZATION=8
 # Your time zone (optionally change it)
-ARG TZ=Europe/Berlin
+ARG TZ=Chicago
 #######################################################################
 
 ARG CMAKE_GIT_HASH=6b24b9c7fca09a7e5ca4ae652f4252175e168bde
