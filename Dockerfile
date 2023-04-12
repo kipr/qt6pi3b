@@ -16,7 +16,7 @@ FROM ubuntu:focal
 ARG QT_VERSION=6.2.4
 # The Qt modules to build
 # I use QtQuick with QML, so the following three modules need to be built
-ARG QT_MODULES=qtbase,qtshadertools,qtdeclarative
+ARG QT_MODULES=qtcore,qtgui,qtquick,qtquickwidgets,qtwidgets,qtquickcontrols2
 # How many cores to use for parallel builds
 ARG PARALLELIZATION=8
 # Your time zone (optionally change it)
