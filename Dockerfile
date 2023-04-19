@@ -31,19 +31,23 @@ ARG RPI_DEVICE=linux-rasp-pi3-g++
 #############################
 RUN apt update \
  && apt upgrade -y \
- && apt install sudo \
- && useradd -G sudo -m qtpi \
+ && apt install openssl -y \
+ && apt install sudo
+#Add user qtpi with password raspberry
+RUN useradd -G sudo -m qtpi -p "$(openssl passwd -1 raspberry)" \
  && echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-USER qtpi:qtpi
+
+USER qtpi
 WORKDIR /home/qtpi
 
 #############################
 # Install required packages #
 #############################
 # Qt
-RUN sudo DEBIAN_FRONTEND=noninteractive TZ="${TZ}" apt install -y make build-essential libclang-dev ninja-build gcc git bison python3 gperf pkg-config libfontconfig1-dev libfreetype6-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-util-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libatspi2.0-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev \
+RUN echo "raspberry" | sudo -S apt install -y make build-essential libclang-dev ninja-build gcc git bison python3 gperf 
+RUN sudo DEBIAN_FRONTEND=noninteractive TZ="${TZ}" apt install -y pkg-config libfontconfig1-dev libfreetype6-dev libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-util-dev libxcb-xinerama0-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libatspi2.0-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 # cross-compiler toolchain \
- && sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+RUN sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
 # package for building CMake \
  && sudo apt install -y libssl-dev \
 # data transfer \
