@@ -16,7 +16,7 @@ FROM ubuntu:focal
 ARG QT_VERSION=6.2.4
 # The Qt modules to build
 # I use QtQuick with QML, so the following three modules need to be built
-ARG QT_MODULES=qtcore,qtgui,qtquick,qtquickwidgets,qtwidgets,qtquickcontrols2
+ARG QT_MODULES=qtbase,qtshadertools,qtdeclarative
 # How many cores to use for parallel builds
 ARG PARALLELIZATION=8
 # Your time zone (optionally change it)
@@ -90,7 +90,7 @@ RUN git clone git://code.qt.io/qt/qt5.git qt6 \
 # Qt HOST build #
 #################
 RUN cd qthost-build \
- && ../qt6/configure -prefix $HOME/qt-host \
+ && ../qt6/configure -prefix /home/qtpi/qt-host \
  && cmake --build . --parallel ${PARALLELIZATION} \
  && cmake --install . \
  && cd .. \
@@ -102,7 +102,7 @@ RUN cd qthost-build \
 COPY --chown=qtpi:qtpi toolchain.cmake /home/qtpi/toolchain.cmake
 
 RUN cd qtpi-build \
- && ../qt6/configure -release -opengl es2 -nomake examples -nomake tests -qt-host-path $HOME/qt-host -extprefix $HOME/qt-raspi -prefix /usr/local/qt6 -device ${RPI_DEVICE} -device-option CROSS_COMPILE=aarch64-linux-gnu- -- -DCMAKE_TOOLCHAIN_FILE=$HOME/toolchain.cmake -DQT_FEATURE_xcb=ON -DFEATURE_xcb_xlib=ON -DQT_FEATURE_xlib=ON \
+ && ../qt6/configure -release -opengl es2 -nomake examples -nomake tests -qt-host-path /home/qtpi/qt-host -extprefix /home/qtpi/qt-raspi -prefix /usr/local/lib -device ${RPI_DEVICE} -device-option CROSS_COMPILE=aarch64-linux-gnu- -- -DCMAKE_TOOLCHAIN_FILE=/home/qtpi/toolchain.cmake -DQT_FEATURE_xcb=ON -DFEATURE_xcb_xlib=ON -DQT_FEATURE_xlib=ON \
  && cmake --build . --parallel ${PARALLELIZATION} \
  && cmake --install . \
  && cd .. \
