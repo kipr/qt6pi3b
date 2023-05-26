@@ -21,6 +21,20 @@ ARG QT_MODULES=qtbase,qtshadertools,qtdeclarative
 ARG PARALLELIZATION=8
 # Your time zone (optionally change it)
 ARG TZ=Chicago
+
+ARG buildKernel=false
+
+#Is the Wombat available to connect over ssh?
+ARG wombatAvailable=true
+
+#SSH address for Wombat
+ARG WOMBAT_IP_ADDRESS="192.168.125.1"
+
+
+#Branch Selection
+ARG libwallabyBranch="refactor"
+ARG botuiBranch="erinQt6Upgrade"
+
 #######################################################################
 
 ARG CMAKE_GIT_HASH=6b24b9c7fca09a7e5ca4ae652f4252175e168bde
@@ -33,6 +47,12 @@ RUN apt update \
  && apt upgrade -y \
  && apt install openssl -y \
  && apt install sudo
+
+
+ #Install OpenGL Dependencies (chatGPT suggested this as a fix for a qt error)
+ RUN sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+
+
 #Add user qtpi with password raspberry
 RUN useradd -G sudo -m qtpi -p "$(openssl passwd -1 raspberry)" \
  && echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -117,4 +137,89 @@ RUN cd qtpi-build \
 # is done in the docker container      #
 ########################################
 COPY --chown=qtpi:qtpi _copyQtToRPi.sh /home/qtpi/copyQtToRPi.sh
+
+###################
+#    Libwallaby   #
+###################
+#Note: The shared libaries would probably be better installed on the host level instead of the container level, but this is easier logistically.
+RUN sudo apt-get update \
+$$ sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen swig -y \
+&& git clone https://github.com/kipr/libwallaby --branch ${libwallabyBranch} \
+&& cd libwallaby \
+&& /home/qtpi/qt-raspi/bin/qt-cmake -Bbuild \
+-DCMAKE_TOOLCHAIN_FILE=$(pwd)/toolchain/aarch64-linux-gnu.cmake \
+-DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc-9 \
+-DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++-9 \
+-DCMAKE_SYSROOT=/home/qtpi/rpi-sysroot .  \
+&& cd build \
+&& make -j${PARALLELIZATION} \
+&& sudo make install \
+&& cd ../.. #return to start for next instructions
+
+###################
+#    Libkar       #
+###################
+RUN git clone https://github.com/kipr/libkar \
+&& cd libkar \
+&& mkdir build \
+&& cd build \
+&& /home/qtpi/qt-raspi/bin/qt-cmake ..  \
+&& make -j${PARALLELIZATION} \
+&& sudo make install \
+&& cd ../.. #return to start for next instructions
+
+
+###################
+#    pCompiler    #
+###################
+RUN git clone https://github.com/kipr/pcompiler \
+&& cd pcompiler \
+&& mkdir build \
+&& cd build \
+&& /home/qtpi/qt-raspi/bin/qt-cmake -Ddocker_cross=ON ..   \
+&& make -j${PARALLELIZATION} \
+&& sudo make install
+
+
+#Move the shared library to the appropriate spot
+RUN cd .. \
+&& cp lib/libpcompiler.so /usr/lib \
+&& cd .. #return to start for next instructions
+
+###################
+#      Botui      #
+###################
+RUN git clone https://github.com/kipr/botui --branch ${botuiBranch} \
+&& cd botui \
+&& mkdir build \
+&& cd build \
+&& /home/qtpi/qt-raspi/bin/qt-cmake -Ddocker_cross=ON .. \
+&& make -j${PARALLELIZATION} \
+&& sudo make install \
+&& cd ../.. #return to start for next instructions
+
+###################
+#      Cpack      #
+###################
+RUN WOMBAT_IP=${WOMBAT_IP_ADDRESS} \
+&& cd libkar/build/ \
+&& sudo cpack  \
+&&  cd ../.. \
+&& cd pcompiler/build/ \
+&& sudo cpack  \
+&&  cd ../.. \
+&& cd libwallaby/build/ \
+&& sudo cpack  \
+&&  cd ../.. \
+&& cd botui/build/ \
+&& sudo cpack  \
+&&  cd ../.. 
+
+RUN if [ "$wombatAvailable" = "true" ]; then \
+    scp libkar/build/libkar-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/libkar-0.1.1-Linux.deb \
+    && scp pcompiler/build/pcompiler-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/pcompiler-0.1.1-Linux.deb \
+    && scp libwallaby/build/kipr-1.0.0-Linux.deb kipr@${WOMBAT_IP}:~/kipr-1.0.0-Linux.deb \
+    && scp botui/build/botui-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/botui-0.1.1-Linux.deb \
+  fi
+
 
