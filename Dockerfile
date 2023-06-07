@@ -18,7 +18,7 @@ ARG QT_VERSION=6.2.4
 # I use QtQuick with QML, so the following three modules need to be built
 ARG QT_MODULES=qtbase,qtshadertools,qtdeclarative
 # How many cores to use for parallel builds
-ARG PARALLELIZATION=8
+ARG PARALLELIZATION=12
 # Your time zone (optionally change it)
 ARG TZ=Chicago
 
@@ -28,7 +28,7 @@ ARG buildKernel=false
 ARG wombatAvailable=true
 
 #SSH address for Wombat
-ARG WOMBAT_IP_ADDRESS="192.168.125.1"
+ARG WOMBAT_IP_ADDRESS="192.168.86.206"
 
 
 #Branch Selection
@@ -50,7 +50,7 @@ RUN apt update \
 
 
  #Install OpenGL Dependencies (chatGPT suggested this as a fix for a qt error)
- RUN sudo apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+ RUN sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
 
 #Add user qtpi with password raspberry
@@ -132,18 +132,12 @@ RUN cd qtpi-build \
  && cd .. \
  && rm -rf qtpi-build
 
-########################################
-# Syncing the Qt files back to the RPi #
-# is done in the docker container      #
-########################################
-COPY --chown=qtpi:qtpi _copyQtToRPi.sh /home/qtpi/copyQtToRPi.sh
-
 ###################
 #    Libwallaby   #
 ###################
 #Note: The shared libaries would probably be better installed on the host level instead of the container level, but this is easier logistically.
 RUN sudo apt-get update \
-$$ sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen swig -y \
+&& sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen swig -y \
 && git clone https://github.com/kipr/libwallaby --branch ${libwallabyBranch} \
 && cd libwallaby \
 && /home/qtpi/qt-raspi/bin/qt-cmake -Bbuild \
@@ -159,7 +153,7 @@ $$ sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen
 ###################
 #    Libkar       #
 ###################
-RUN git clone https://github.com/kipr/libkar \
+RUN git clone https://github.com/kipr/libkar --branch erinQt6Upgrade \
 && cd libkar \
 && mkdir build \
 && cd build \
@@ -172,7 +166,7 @@ RUN git clone https://github.com/kipr/libkar \
 ###################
 #    pCompiler    #
 ###################
-RUN git clone https://github.com/kipr/pcompiler \
+RUN git clone https://github.com/kipr/pcompiler --branch erinQt6Upgrade  \
 && cd pcompiler \
 && mkdir build \
 && cd build \
@@ -182,9 +176,9 @@ RUN git clone https://github.com/kipr/pcompiler \
 
 
 #Move the shared library to the appropriate spot
-RUN cd .. \
-&& cp lib/libpcompiler.so /usr/lib \
-&& cd .. #return to start for next instructions
+# RUN cd .. \
+# && cp lib/libpcompiler.so /usr/lib \
+# && cd .. #return to start for next instructions
 
 ###################
 #      Botui      #
@@ -214,12 +208,16 @@ RUN WOMBAT_IP=${WOMBAT_IP_ADDRESS} \
 && cd botui/build/ \
 && sudo cpack  \
 &&  cd ../.. 
+# RUN echo ${WOMBAT_IP}
+# RUN if [ "$wombatAvailable" = "true" ]; then \
+#     scp libkar/build/libkar-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/libkar-0.1.1-Linux.deb \
+#     && scp pcompiler/build/pcompiler-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/pcompiler-0.1.1-Linux.deb \
+#     && scp libwallaby/build/kipr-1.0.0-Linux.deb kipr@${WOMBAT_IP}:~/kipr-1.0.0-Linux.deb \
+#     && scp botui/build/botui-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/botui-0.1.1-Linux.deb; \
+#     fi
 
-RUN if [ "$wombatAvailable" = "true" ]; then \
-    scp libkar/build/libkar-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/libkar-0.1.1-Linux.deb \
-    && scp pcompiler/build/pcompiler-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/pcompiler-0.1.1-Linux.deb \
-    && scp libwallaby/build/kipr-1.0.0-Linux.deb kipr@${WOMBAT_IP}:~/kipr-1.0.0-Linux.deb \
-    && scp botui/build/botui-0.1.1-Linux.deb kipr@${WOMBAT_IP}:~/botui-0.1.1-Linux.deb \
-  fi
-
-
+########################################
+# Syncing the Qt files back to the RPi #
+# is done in the docker container      #
+########################################
+COPY --chown=qtpi:qtpi _copyQtToRPi.sh /home/qtpi/copyQtToRPi.sh

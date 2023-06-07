@@ -10,3 +10,4 @@ RPI_IP_ADDR=$2
 
 rsync -avz --rsync-path="sudo rsync" qt-raspi/* ${RPI_USERNAME}@${RPI_IP_ADDR}:/usr/local/qt6
 
+rsync -avz --rsync-path="sudo rsync" libkar/* pcompiler/* libwallaby/* botui/* ${RPI_USERNAME}@${RPI_IP_ADDR}:home/kipr
