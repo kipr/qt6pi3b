@@ -32,8 +32,11 @@ ARG WOMBAT_IP_ADDRESS="192.168.86.206"
 
 
 #Branch Selection
-ARG libwallabyBranch="refactor"
-ARG botuiBranch="erinQt6Upgrade"
+#ARG libwallabyBranch="refactor"
+#ARG botuiBranch="erinQt6Upgrade"
+
+COPY lib .
+COPY include .
 
 #######################################################################
 
@@ -132,13 +135,16 @@ RUN cd qtpi-build \
  && cd .. \
  && rm -rf qtpi-build
 
+
+
+
 ###################
 #    Libwallaby   #
 ###################
 #Note: The shared libaries would probably be better installed on the host level instead of the container level, but this is easier logistically.
 RUN sudo apt-get update \
 && sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen swig -y \
-&& git clone https://github.com/kipr/libwallaby --branch ${libwallabyBranch} \
+&& git clone https://github.com/kipr/libwallaby \
 && cd libwallaby \
 && /home/qtpi/qt-raspi/bin/qt-cmake -Bbuild \
 -DCMAKE_TOOLCHAIN_FILE=$(pwd)/toolchain/aarch64-linux-gnu.cmake \
@@ -153,7 +159,7 @@ RUN sudo apt-get update \
 ###################
 #    Libkar       #
 ###################
-RUN git clone https://github.com/kipr/libkar --branch erinQt6Upgrade \
+RUN git clone https://github.com/kipr/libkar  \
 && cd libkar \
 && mkdir build \
 && cd build \
@@ -166,7 +172,7 @@ RUN git clone https://github.com/kipr/libkar --branch erinQt6Upgrade \
 ###################
 #    pCompiler    #
 ###################
-RUN git clone https://github.com/kipr/pcompiler --branch erinQt6Upgrade  \
+RUN git clone https://github.com/kipr/pcompiler  \
 && cd pcompiler \
 && mkdir build \
 && cd build \
@@ -183,7 +189,7 @@ RUN git clone https://github.com/kipr/pcompiler --branch erinQt6Upgrade  \
 ###################
 #      Botui      #
 ###################
-RUN git clone https://github.com/kipr/botui --branch ${botuiBranch} \
+RUN git clone https://github.com/kipr/botui  \
 && cd botui \
 && mkdir build \
 && cd build \

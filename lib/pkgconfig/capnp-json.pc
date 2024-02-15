@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: Cap'n Proto JSON
+Description: JSON encoder and decoder for Cap'n Proto objects
+Version: 1.0.0
+Libs: -L${libdir} -lcapnp-json
+Requires: capnp = 1.0.0 kj = 1.0.0
+Cflags: -I${includedir}
