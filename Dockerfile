@@ -27,8 +27,15 @@ ARG buildKernel=false
 #Is the Wombat available to connect over ssh?
 ARG wombatAvailable=true
 
+#The username of the Raspberry Pi
+ENV PI_USERNAME="your_username"
+
 #The IP address of the Wombat
 ENV WOMBAT_IP_ADDRESS="default_value"
+
+#Password for kipr user on the Raspberry Pi
+ENV PI_PASSWORD = "your_password"
+
 
 #######################################################################
 
@@ -217,12 +224,13 @@ RUN WOMBAT_IP=${WOMBAT_IP_ADDRESS} \
 COPY copyLibraries.sh /usr/local/bin/
 RUN sudo chmod +x /usr/local/bin/copyLibraries.sh
 
-#Password for kipr user on the Raspberry Pi
-ENV PI_PASSWORD = "botball"
 
+COPY _copyQtToRPi.sh /usr/local/bin/
+RUN sudo chmod +x /usr/local/bin/_copyQtToRPi.sh
 
 # Run script
 CMD ["copyLibraries.sh"]
+
 
 ########################################
 # Syncing the Qt files back to the RPi #
