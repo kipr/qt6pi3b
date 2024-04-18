@@ -164,8 +164,8 @@ RUN git clone https://github.com/kipr/pcompiler  \
 
 
 #Move arm64_docker include and lib folders from qt6pi3b directory to docker container
-ADD lib/* /home/qtpi/rpi-sysroot/usr/
-ADD include/* /home/qtpi/rpi-sysroot/usr/
+ADD lib/ /home/qtpi/rpi-sysroot/usr/lib
+ADD include/ /home/qtpi/rpi-sysroot/usr/include
 ADD rpi-sysroot/usr/lib/ld-linux-aarch64.so.1 /lib/
 RUN sudo find rpi-sysroot/usr/lib/aarch64-linux-gnu/ -not -type d -execdir cp "{}" /lib/ ";"
 
