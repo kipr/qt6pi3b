@@ -177,7 +177,7 @@ RUN sudo find rpi-sysroot/usr/lib/aarch64-linux-gnu/ -not -type d -execdir cp "{
 RUN sudo apt-get update \
     && sudo apt-get upgrade -y\
     && sudo apt-get install libzbar-dev libopencv-dev libjpeg-dev python-dev doxygen swig -y \
-    && git clone https://github.com/kipr/libwallaby \
+    && git clone https://github.com/kipr/libwallaby -b telloUI\
     && cd libwallaby \
     && /home/qtpi/qt-raspi/bin/qt-cmake -Bbuild \
     -DCMAKE_TOOLCHAIN_FILE=$(pwd)/toolchain/aarch64-linux-gnu.cmake \
